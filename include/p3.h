@@ -13,7 +13,7 @@ class P3 {
         P3(int width, int height, std::string path);
         ~P3();
 
-        void set_img_buffer(std::vector<Vector3<int>>& buffer);
+        void set_img_buffer(std::vector<Vector3<float>>& buffer);
         void write_image();
 
     private:
@@ -21,7 +21,7 @@ class P3 {
 
         std::ofstream m_outfile;
 
-        std::vector<Vector3<int>> m_buffer;
+        std::vector<Vector3<float>> m_buffer;
 
         int m_img_width;
         int m_img_height;
