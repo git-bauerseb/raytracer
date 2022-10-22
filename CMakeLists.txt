@@ -5,4 +5,9 @@ include_directories(include)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(raytracer src/main.cpp src/p3.cpp)
+add_executable(raytracer
+        src/main.cpp
+        src/p3.cpp
+        src/scene.cpp
+        src/ray.cpp
+        src/objects/sphere.cpp)

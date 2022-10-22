@@ -2,6 +2,12 @@
 
 This is a simple raytracer written in C++
 
+## About
+
+Current render output:
+
+![Render output](./resources/img.png)
+
 ## Setup
 
 ```shell

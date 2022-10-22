@@ -13,6 +13,8 @@ class Ray {
         Vector3<float> direction() const {return m_direction;}
         Vector3<float> origin() const {return m_origin;}
 
+        Vector3<float> at(float scalar) const;
+
     private:
         Vector3<float> m_origin;
         Vector3<float> m_direction;

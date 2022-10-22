@@ -16,8 +16,16 @@ Scene::Scene(int img_width, float viewport_width, float aspect_ratio, float foca
                         - Vector3<float>(0, 0, focal_length);
 }
 
-
 Vector3<float> Scene::get_color(Ray& r) const {
+    HitInfo info;
+
+    for (auto& robj : m_render_objects) {
+        if (robj->hit(r, info)) {
+            Vector3<float> norm = info.m_normal;
+            return 0.5 * Vector3<float>(norm[0]+1, norm[1] + 1, norm[2] + 1);
+        }
+    }
+
     Vector3<float> norm = r.direction().normalized();
     float t = 0.5f * (norm[1] + 1.0);
     return (1.0f - t) * Vector3<float>(1.0, 1.0, 1.0)
@@ -26,6 +34,7 @@ Vector3<float> Scene::get_color(Ray& r) const {
 
 std::vector<Vector3<float>> Scene::render() const {
     std::vector<Vector3<float>> buffer(m_img_height * m_img_width);
+
 
     for (int y = m_img_height - 1, idx = 0; y >= 0; y--) {
         for (int x = 0; x < m_img_width; x++, idx++) {
@@ -39,4 +48,8 @@ std::vector<Vector3<float>> Scene::render() const {
     }
 
     return buffer;
+}
+
+void Scene::add_object(RObject* obj) {
+    m_render_objects.push_back(obj);
 }
