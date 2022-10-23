@@ -25,6 +25,7 @@ bool Sphere::hit(const Ray& ray, HitInfo& hit, double t_min, double t_max) const
     hit.m_t = root;
     hit.m_position = ray.at(root);
     hit.m_normal = 1.0f / m_radius * (hit.m_position - m_center);
+    hit.m_material = this->m_material;
 
     return true;
 }

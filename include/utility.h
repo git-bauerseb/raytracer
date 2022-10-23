@@ -2,6 +2,7 @@
 #define RAYTRACER_UTILITY_H
 
 #include <random>
+#include <memory>
 
 inline float rand_number() {
     static std::uniform_real_distribution<double> distribution(0.0, 1.0);

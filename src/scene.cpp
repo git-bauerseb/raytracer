@@ -23,10 +23,15 @@ Vector3<double> Scene::get_color(Ray& r, int depth) const {
         return {0,0,0};
     }
 
-    if (m_render_objects.hit(r, info, 0, std::numeric_limits<double>::max())) {
-            Vector3<double> target = info.m_position + info.m_normal + Vector3<double>::random_in_unit_sphere();
-            Ray n_r(info.m_position, target - info.m_position);
-            return 0.5 * Scene::get_color(n_r, depth-1);
+    if (m_render_objects.hit(r, info, 0.0001, std::numeric_limits<double>::max())) {
+        Ray scattered;
+        Vector3<double> attenuation;
+
+        if (info.m_material->scatter(r, info, attenuation, scattered)) {
+            return attenuation * get_color(scattered, depth-1);
+        }
+
+        return {0,0,0};
     }
 
     Vector3<double> norm = r.direction().normalized();
@@ -46,18 +51,20 @@ std::vector<Vector3<double>> Scene::render() const {
 
             // Anti-aliasing
             // Sample color from neighbouring pixels and average them
-            for (int i = 0; i < 28; i++) {
+
+            for (int i = 0; i < 64; i++) {
                 double u_coord = double(x + rand_number()) / (m_img_width-1);
                 double v_coord = double(y + rand_number()) / (m_img_height-1);
                 Ray r(m_camera_pos, m_viewport_origin + u_coord * m_horizontal + v_coord * m_vertical - m_camera_pos);
                 color = color + get_color(r, 12);
             }
 
-            double scale = 1/12.0f;
+            double scale = 1/64.0f;
 
             buffer[idx][0] = std::sqrt(scale * color[0]);
             buffer[idx][1] = std::sqrt(scale * color[1]);
             buffer[idx][2] = std::sqrt(scale * color[2]);
+
         }
     }
 

@@ -6,6 +6,8 @@
 
 #include "utility.h"
 
+#define EPSILON 1e-7
+
 template<typename T>
 class Vector3 {
     public:
@@ -20,9 +22,14 @@ class Vector3 {
         T dot(Vector3<T> other) const;
 
         static Vector3<T> random_in_unit_sphere();
+        static Vector3<T> random_unit_vector();
 
         static Vector3<T> random();
         static Vector3<T> random(float min, float max);
+
+        bool is_zero() const;
+
+        static Vector3<T> reflect(const Vector3<T>& v, const Vector3<T>& normal);
 
         float length_squared() const;
 
@@ -34,6 +41,8 @@ class Vector3 {
 
         template<typename G>
         friend Vector3<G> operator*(float scalar, const Vector3<G>& vector);
+        template<typename G>
+        friend Vector3<G> operator*(const Vector3<G>& v1, const Vector3<G>& v2);
 
         template<typename G>
         friend Vector3<G> operator/(float scalar, const Vector3<G>& vector);
@@ -118,6 +127,23 @@ Vector3<T> Vector3<T>::random_in_unit_sphere() {
     }
 }
 
+template<typename T>
+Vector3<T> Vector3<T>::random_unit_vector() {
+    return Vector3<T>().random_in_unit_sphere().normalized();
+}
+
+template<typename T>
+bool Vector3<T>::is_zero() const {
+    return std::abs(m_elements[0]) < EPSILON
+        && std::abs(m_elements[1]) < EPSILON
+        && std::abs(m_elements[2]) < EPSILON;
+}
+
+template<typename T>
+Vector3<T> Vector3<T>::reflect(const Vector3<T> &v, const Vector3<T> &normal) {
+    return v - 2 * v.dot(normal) * normal;
+}
+
 // Overloaded operators
 // Output vector to stream
 template<typename T>
@@ -138,6 +164,11 @@ Vector3<T> operator/(float scalar, const Vector3<T>& vector) {
 template<typename T>
 Vector3<T> operator*(float scalar, const Vector3<T>& vector) {
     return Vector3<T>(scalar * vector[0], scalar * vector[1], scalar * vector[2]);
+}
+
+template<typename T>
+Vector3<T> operator*(const Vector3<T>& v1, const Vector3<T>& v2) {
+    return Vector3<T>(v1[0] * v2[0], v1[1] * v2[1], v1[2] * v2[2]);
 }
 
 template<typename T>
