@@ -1,14 +1,21 @@
 #include "p3.h"
 #include "scene.h"
 
+#include "objects/r_object.h"
 #include "objects/sphere.h"
+
+#include "utility.h"
+
 
 int main() {
 
-    Scene scene(256, 2.0f, 16.0f / 9.0f, 1.0f);
 
-    Sphere* sphere = new Sphere({0,0,-2}, .5f);
-    scene.add_object(sphere);
+    Scene scene(512, 2.0f, 16.0f / 9.0f, 1.0f);
+
+    RObjectList list;
+    list.add(std::make_shared<Sphere>(Sphere({0.2,0.4,-2}, .5f)));
+    list.add(std::make_shared<Sphere>(Sphere({-0.2,0.1,-2}, 0.4f)));
+    scene.add_objects(list);
 
     auto buffer = scene.render();
 

@@ -4,6 +4,8 @@
 #include <cmath>
 #include <ostream>
 
+#include "utility.h"
+
 template<typename T>
 class Vector3 {
     public:
@@ -16,6 +18,13 @@ class Vector3 {
         T& operator[](int index);
 
         T dot(Vector3<T> other) const;
+
+        static Vector3<T> random_in_unit_sphere();
+
+        static Vector3<T> random();
+        static Vector3<T> random(float min, float max);
+
+        float length_squared() const;
 
         template<typename G>
         friend Vector3<G> operator-(const Vector3<G>& vec);
@@ -73,6 +82,42 @@ Vector3<T> Vector3<T>::normalized() const {
                       m_elements[2] / magnitude);
 }
 
+template<typename T>
+float Vector3<T>::length_squared() const {
+    return m_elements[0] * m_elements[0]
+        + m_elements[1] * m_elements[1]
+        + m_elements[2] * m_elements[2];
+}
+
+template<typename T>
+T Vector3<T>::dot(Vector3<T> other) const {
+    return this->m_elements[0] * other.m_elements[0]
+           + this->m_elements[1] * other.m_elements[1]
+           + this->m_elements[2] * other.m_elements[2];
+}
+
+template<typename T>
+Vector3<T> Vector3<T>::random() {
+    return Vector3<T>(rand_number(), rand_number(), rand_number());
+}
+
+template<typename T>
+Vector3<T> Vector3<T>::random(float min, float max) {
+    return Vector3<T>(rand_number(min, max),
+                      rand_number(min, max),
+                      rand_number(min, max));
+}
+
+
+template<typename T>
+Vector3<T> Vector3<T>::random_in_unit_sphere() {
+    while (true) {
+        auto p = Vector3<T>::random(-1, 1);
+        if (p.length_squared() >= 1) {continue;}
+        return p;
+    }
+}
+
 // Overloaded operators
 // Output vector to stream
 template<typename T>
@@ -104,13 +149,6 @@ Vector3<T> operator+(const Vector3<T>& vec1, const Vector3<T>& vec2) {
 template<typename T>
 Vector3<T> operator-(const Vector3<T>& vec) {
     return Vector3<T>(-vec[0], -vec[1], -vec[2]);
-}
-
-template<typename T>
-T Vector3<T>::dot(Vector3<T> other) const {
-    return this->m_elements[0] * other.m_elements[0]
-        + this->m_elements[1] * other.m_elements[1]
-        + this->m_elements[2] * other.m_elements[2];
 }
 
 #endif

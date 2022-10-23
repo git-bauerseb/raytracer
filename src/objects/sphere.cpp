@@ -1,19 +1,26 @@
 #include "objects/sphere.h"
 
-bool Sphere::hit(const Ray& ray, HitInfo& hit) const {
-    Vector3<float> oc = ray.origin() - m_center;
-    float a = ray.direction().dot(ray.direction());
-    float half_b = oc.dot(ray.direction());
-    float c = oc.dot(oc) - m_radius * m_radius;
+bool Sphere::hit(const Ray& ray, HitInfo& hit, double t_min, double t_max) const {
+    Vector3<double> oc = ray.origin() - m_center;
+    double a = ray.direction().dot(ray.direction());
+    double half_b = oc.dot(ray.direction());
+    double c = oc.dot(oc) - m_radius * m_radius;
 
-    float discriminant = half_b * half_b - a * c;
-    float sqrt_discr = std::sqrt(discriminant);
+    double discriminant = half_b * half_b - a * c;
+    double sqrt_discr = std::sqrt(discriminant);
 
     if (discriminant < 0) {
         return false;
     }
 
-    float root = (-half_b - sqrt_discr) / a;
+    double root = (-half_b - sqrt_discr) / a;
+
+    if (root < t_min || t_max < root) {
+        root = (-half_b + sqrt_discr) / a;
+        if (root < t_min || t_max < root) {
+            return false;
+        }
+    }
 
     hit.m_t = root;
     hit.m_position = ray.at(root);

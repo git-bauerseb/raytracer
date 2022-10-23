@@ -8,14 +8,14 @@
 class Sphere : public RObject {
     public:
 
-        Sphere(Vector3<float> center, float radius)
+        Sphere(Vector3<double> center, double radius)
             : m_center(center), m_radius(radius) {}
 
-        bool hit(const Ray& ray, HitInfo& hit) const override;
+        bool hit(const Ray& ray, HitInfo& hit, double t_min, double t_max) const override;
 
     private:
-        Vector3<float> m_center;
-        float m_radius;
+        Vector3<double> m_center;
+        double m_radius;
 
 };
 
