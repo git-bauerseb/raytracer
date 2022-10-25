@@ -17,17 +17,22 @@ void P3::write_image() {
 
     for (int y = 0; y < m_img_height; y++) {
         for (int x = 0; x < m_img_width; x++) {
-            Vector3<double> vec = m_buffer[x + m_img_width * y];
-            m_outfile << static_cast<int>(255.999 * vec[0]) << " "
-                      << static_cast<int>(255.999 * vec[1]) << " "
-                      << static_cast<int>(255.999 * vec[2]) << " ";
+            vec3 vec = m_buffer[x + m_img_width * y];
+
+            if (vec[0] != vec[0]) {vec[0] = 0.0;}
+            if (vec[1] != vec[1]) {vec[1] = 0.0;}
+            if (vec[2] != vec[2]) {vec[2] = 0.0;}
+
+            m_outfile << static_cast<int>(256 * clamp(vec[0], 0.0, 0.999)) << " "
+                      << static_cast<int>(256 * clamp(vec[1], 0.0, 0.999)) << " "
+                      << static_cast<int>(256 * clamp(vec[2], 0.0, 0.999)) << " ";
         }
 
         m_outfile << "\n";
     }
 }
 
-void P3::set_img_buffer(std::vector<Vector3<double>> &buffer) {
+void P3::set_img_buffer(std::vector<vec3> &buffer) {
     m_buffer = std::move(buffer);
 }
 

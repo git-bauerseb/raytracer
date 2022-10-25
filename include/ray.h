@@ -6,18 +6,18 @@
 class Ray {
 
     public:
-        Ray(Vector3<double> origin, Vector3<double> direction)
+        Ray(const vec3 origin, const vec3 direction)
             : m_origin(origin), m_direction(direction) {}
         Ray() {}
 
-        Vector3<double> direction() const {return m_direction;}
-        Vector3<double> origin() const {return m_origin;}
+        vec3 direction() const {return m_direction;}
+        vec3 origin() const {return m_origin;}
 
-        Vector3<double> at(double scalar) const;
+        vec3 at(double scalar) const;
 
     private:
-        Vector3<double> m_origin;
-        Vector3<double> m_direction;
+        vec3 m_origin;
+        vec3 m_direction;
 };
 
 #endif

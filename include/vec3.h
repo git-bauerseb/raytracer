@@ -6,180 +6,155 @@
 
 #include "utility.h"
 
-#define EPSILON 1e-7
+using std::sqrt;
+using std::fabs;
 
-template<typename T>
-class Vector3 {
-    public:
-        Vector3();
-        Vector3(T x, T y, T z);
+class vec3 {
+public:
+    vec3() : e{0,0,0} {}
+    vec3(double e0, double e1, double e2) : e{e0, e1, e2} {}
 
-        Vector3<T> normalized() const;
+    double x() const { return e[0]; }
+    double y() const { return e[1]; }
+    double z() const { return e[2]; }
 
-        T operator[](int index) const;
-        T& operator[](int index);
+    vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }
+    double operator[](int i) const { return e[i]; }
+    double& operator[](int i) { return e[i]; }
 
-        T dot(Vector3<T> other) const;
+    vec3& operator+=(const vec3 &v) {
+        e[0] += v.e[0];
+        e[1] += v.e[1];
+        e[2] += v.e[2];
+        return *this;
+    }
 
-        static Vector3<T> random_in_unit_sphere();
-        static Vector3<T> random_unit_vector();
+    vec3& operator*=(const double t) {
+        e[0] *= t;
+        e[1] *= t;
+        e[2] *= t;
+        return *this;
+    }
 
-        static Vector3<T> random();
-        static Vector3<T> random(float min, float max);
+    vec3& operator/=(const double t) {
+        return *this *= 1/t;
+    }
 
-        bool is_zero() const;
+    double length() const {
+        return sqrt(length_squared());
+    }
 
-        static Vector3<T> reflect(const Vector3<T>& v, const Vector3<T>& normal);
+    double length_squared() const {
+        return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
+    }
 
-        float length_squared() const;
+    bool near_zero() const {
+        // Return true if the vector is close to zero in all dimensions.
+        const auto s = 1e-8;
+        return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
+    }
 
-        template<typename G>
-        friend Vector3<G> operator-(const Vector3<G>& vec);
+    inline static vec3 random() {
+        return vec3(rand_number(), rand_number(), rand_number());
+    }
 
-        template<typename G>
-        friend Vector3<G> operator-(const Vector3<G>& first, const Vector3<G>& second);
+    inline static vec3 random(double min, double max) {
+        return vec3(rand_number(min,max), rand_number(min,max), rand_number(min,max));
+    }
 
-        template<typename G>
-        friend Vector3<G> operator*(float scalar, const Vector3<G>& vector);
-        template<typename G>
-        friend Vector3<G> operator*(const Vector3<G>& v1, const Vector3<G>& v2);
-
-        template<typename G>
-        friend Vector3<G> operator/(float scalar, const Vector3<G>& vector);
-
-        template<typename G>
-        friend Vector3<G> operator+(const Vector3<G>& vec1, const Vector3<G>& vec2);
-
-        template<typename G>
-        friend std::ostream& operator<<(std::ostream& out, const Vector3<G>& vec);
-
-    private:
-        T m_elements[3];
-
+public:
+    double e[3];
 };
 
-template<typename T>
-Vector3<T>::Vector3(T x, T y, T z) {
-    m_elements[0] = x;
-    m_elements[1] = y;
-    m_elements[2] = z;
+
+// Type aliases for vec3
+using point3 = vec3;   // 3D point
+using color = vec3;    // RGB color
+
+
+// vec3 Utility Functions
+
+inline std::ostream& operator<<(std::ostream &out, const vec3 &v) {
+    return out << v.e[0] << ' ' << v.e[1] << ' ' << v.e[2];
 }
 
-template<typename T>
-T& Vector3<T>::operator[](int index) {
-    return m_elements[index];
+inline vec3 operator+(const vec3 &u, const vec3 &v) {
+    return vec3(u.e[0] + v.e[0], u.e[1] + v.e[1], u.e[2] + v.e[2]);
 }
 
-template<typename T>
-T Vector3<T>::operator[](int index) const {
-    return m_elements[index];
+inline vec3 operator-(const vec3 &u, const vec3 &v) {
+    return vec3(u.e[0] - v.e[0], u.e[1] - v.e[1], u.e[2] - v.e[2]);
 }
 
-template<typename T>
-Vector3<T>::Vector3() {
-    m_elements[0] = m_elements[1] = m_elements[2] = 0;
+inline vec3 operator*(const vec3 &u, const vec3 &v) {
+    return vec3(u.e[0] * v.e[0], u.e[1] * v.e[1], u.e[2] * v.e[2]);
 }
 
-template<typename T>
-Vector3<T> Vector3<T>::normalized() const {
-    float magnitude = std::sqrt(m_elements[0] * m_elements[0]
-                    + m_elements[1] * m_elements[1]
-                    + m_elements[2] * m_elements[2]);
-
-    return Vector3<T>(m_elements[0] / magnitude,
-                      m_elements[1] / magnitude,
-                      m_elements[2] / magnitude);
+inline vec3 operator*(double t, const vec3 &v) {
+    return vec3(t*v.e[0], t*v.e[1], t*v.e[2]);
 }
 
-template<typename T>
-float Vector3<T>::length_squared() const {
-    return m_elements[0] * m_elements[0]
-        + m_elements[1] * m_elements[1]
-        + m_elements[2] * m_elements[2];
+inline vec3 operator*(const vec3 &v, double t) {
+    return t * v;
 }
 
-template<typename T>
-T Vector3<T>::dot(Vector3<T> other) const {
-    return this->m_elements[0] * other.m_elements[0]
-           + this->m_elements[1] * other.m_elements[1]
-           + this->m_elements[2] * other.m_elements[2];
+inline vec3 operator/(vec3 v, double t) {
+    return (1/t) * v;
 }
 
-template<typename T>
-Vector3<T> Vector3<T>::random() {
-    return Vector3<T>(rand_number(), rand_number(), rand_number());
+inline double dot(const vec3 &u, const vec3 &v) {
+    return u.e[0] * v.e[0]
+           + u.e[1] * v.e[1]
+           + u.e[2] * v.e[2];
 }
 
-template<typename T>
-Vector3<T> Vector3<T>::random(float min, float max) {
-    return Vector3<T>(rand_number(min, max),
-                      rand_number(min, max),
-                      rand_number(min, max));
+inline vec3 cross(const vec3 &u, const vec3 &v) {
+    return vec3(u.e[1] * v.e[2] - u.e[2] * v.e[1],
+                u.e[2] * v.e[0] - u.e[0] * v.e[2],
+                u.e[0] * v.e[1] - u.e[1] * v.e[0]);
 }
 
+inline vec3 unit_vector(vec3 v) {
+    return v / v.length();
+}
 
-template<typename T>
-Vector3<T> Vector3<T>::random_in_unit_sphere() {
+inline vec3 random_in_unit_disk() {
     while (true) {
-        auto p = Vector3<T>::random(-1, 1);
-        if (p.length_squared() >= 1) {continue;}
+        auto p = vec3(rand_number(-1,1), rand_number(-1,1), 0);
+        if (p.length_squared() >= 1) continue;
         return p;
     }
 }
 
-template<typename T>
-Vector3<T> Vector3<T>::random_unit_vector() {
-    return Vector3<T>().random_in_unit_sphere().normalized();
+inline vec3 random_in_unit_sphere() {
+    while (true) {
+        auto p = vec3::random(-1,1);
+        if (p.length_squared() >= 1) continue;
+        return p;
+    }
 }
 
-template<typename T>
-bool Vector3<T>::is_zero() const {
-    return std::abs(m_elements[0]) < EPSILON
-        && std::abs(m_elements[1]) < EPSILON
-        && std::abs(m_elements[2]) < EPSILON;
+inline vec3 random_unit_vector() {
+    return unit_vector(random_in_unit_sphere());
 }
 
-template<typename T>
-Vector3<T> Vector3<T>::reflect(const Vector3<T> &v, const Vector3<T> &normal) {
-    return v - 2 * v.dot(normal) * normal;
+inline vec3 random_in_hemisphere(const vec3& normal) {
+    vec3 in_unit_sphere = random_in_unit_sphere();
+    if (dot(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+        return in_unit_sphere;
+    else
+        return -in_unit_sphere;
 }
 
-// Overloaded operators
-// Output vector to stream
-template<typename T>
-std::ostream& operator<<(std::ostream& stream, const Vector3<T> &vec) {
-    return stream << vec[0] << " " << vec[1] << " " << vec[2];
+inline vec3 reflect(const vec3& v, const vec3& n) {
+    return v - 2*dot(v,n)*n;
 }
 
-template<typename T>
-Vector3<T> operator-(const Vector3<T>& first, const Vector3<T>& second) {
-    return Vector3<T>(first[0] - second[0], first[1] - second[1], first[2] - second[2]);
-}
-
-template<typename T>
-Vector3<T> operator/(float scalar, const Vector3<T>& vector) {
-    return Vector3<T>(vector[0] / scalar, vector[1] / scalar, vector[2] / scalar);
-}
-
-template<typename T>
-Vector3<T> operator*(float scalar, const Vector3<T>& vector) {
-    return Vector3<T>(scalar * vector[0], scalar * vector[1], scalar * vector[2]);
-}
-
-template<typename T>
-Vector3<T> operator*(const Vector3<T>& v1, const Vector3<T>& v2) {
-    return Vector3<T>(v1[0] * v2[0], v1[1] * v2[1], v1[2] * v2[2]);
-}
-
-template<typename T>
-Vector3<T> operator+(const Vector3<T>& vec1, const Vector3<T>& vec2) {
-    return Vector3<T>(vec1[0] + vec2[0], vec1[1] + vec2[1], vec1[2] + vec2[2]);
-}
-
-
-template<typename T>
-Vector3<T> operator-(const Vector3<T>& vec) {
-    return Vector3<T>(-vec[0], -vec[1], -vec[2]);
+inline vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) {
+    auto cos_theta = fmin(dot(-uv, n), 1.0);
+    vec3 r_out_perp =  etai_over_etat * (uv + cos_theta*n);
+    vec3 r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n;
+    return r_out_perp + r_out_parallel;
 }
 
 #endif
