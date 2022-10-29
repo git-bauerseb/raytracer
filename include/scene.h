@@ -1,50 +1,39 @@
 #ifndef RAYTRACER_SCENE_H
 #define RAYTRACER_SCENE_H
 
-#include <vector>
+#include <iostream>
 
-#include "vec3.h"
-#include "ray.h"
 #include "objects/r_object.h"
+#include "objects/sphere.h"
 
-#include "utility.h"
+#include "material.h"
+#include "camera.h"
 
 class Scene {
+
     public:
-        Scene(int img_width, double viewport_height, double aspect_ratio, double focal_length);
+        Scene() {}
 
-        std::vector<vec3> render() const;
+        // Set up a random scene
+        void set_random_scene();
+        std::vector<vec3> render();
 
-        int image_width() const {return m_img_width;}
-        int image_height() const {return m_img_height;}
-
-        void add_objects(RObjectList& list) {
-            m_render_objects = list;
-        }
+        int get_width() const {return m_img_width;}
+        int get_height() const {return m_img_height;}
 
     private:
+        void set_camera_settings();
 
-        vec3 get_color(const Ray& r, int depth) const;
+        color ray_color(const Ray& r, int depth);
 
-        RObjectList m_render_objects;           // List of objects that can be rendered
+        Camera m_camera;
+        RObjectList m_objects;
 
-        int m_img_width;                        // The width of the rendered image
-        int m_img_height;                       // The height of the rendered image
+        int m_img_height;
+        int m_img_width;
 
-        double m_viewport_width;                 // Width of the viewport onto which
-                                                // our render is projected
-        double m_viewport_height;
-
-        double m_aspect_ration;                  // The aspect ratio of the viewport
-                                                // (width / height)
-
-        double m_focal_length;                   // Distance between camera and viewport
-
-        vec3 m_camera_pos;            // Position of camera in world coordinates
-        vec3 m_viewport_origin;       // Origin (bottom-left corner) of viewport
-
-        vec3 m_horizontal;            // Describes the vector (m_viewport_width, 0, 0)
-        vec3 m_vertical;              // Describes the vector (0, m_viewport_height, 0)
+        int m_samples;
+        int m_raytrace_depth;
 };
 
 #endif

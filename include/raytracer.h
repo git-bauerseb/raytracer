@@ -15,7 +15,7 @@ struct HitInfo {
     // the ray
 
     std::shared_ptr<Material> m_material;
-    bool front_face = false;
+    bool front_face;
 
     inline void set_face_normal(const Ray& r, const vec3& outward) {
         front_face = dot(r.direction(),outward) < 0;

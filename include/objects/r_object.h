@@ -10,7 +10,12 @@
 
 class RObject {
     public:
-        virtual bool hit(const Ray& ray, HitInfo& hit, double t_min, double t_max) const =0;
+    virtual bool hit(
+            const Ray& r,
+            double t_min,
+            double t_max,
+            HitInfo& rec
+    ) const =0;
 };
 
 class RObjectList : public RObject {
@@ -26,16 +31,21 @@ class RObjectList : public RObject {
             m_objects.push_back(object);
         }
 
-        bool hit(const Ray& ray, HitInfo& hit, double t_min, double t_max) const override {
+        void add(std::shared_ptr<RObject>& object) {
+            m_objects.push_back(object);
+        }
+
+        virtual bool hit(
+            const Ray& r, double t_min, double t_max, HitInfo& rec) const override {
             HitInfo tmp_hit;
             bool has_hit = false;
             double closest = std::numeric_limits<double>::max();
 
             for (const auto& obj : m_objects) {
-                if (obj->hit(ray, tmp_hit, 0, closest)) {
+                if (obj->hit(r, 0, closest, tmp_hit)) {
                     has_hit = true;
                     closest = tmp_hit.m_t;
-                    hit = tmp_hit;
+                    rec = tmp_hit;
                 }
             }
 

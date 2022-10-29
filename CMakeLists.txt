@@ -9,5 +9,4 @@ add_executable(raytracer
         src/main.cpp
         src/p3.cpp
         src/scene.cpp
-        src/ray.cpp
         src/objects/sphere.cpp)

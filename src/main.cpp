@@ -1,40 +1,41 @@
-#include "p3.h"
+#include <iostream>
+
 #include "scene.h"
+#include "p3.h"
 
-#include "objects/r_object.h"
-#include "objects/sphere.h"
+void write_color(std::ostream &out, color pixel_color, int samples_per_pixel) {
+    auto r = pixel_color.x();
+    auto g = pixel_color.y();
+    auto b = pixel_color.z();
 
-#include "utility.h"
+    // Replace NaN components with zero. See explanation in Ray Tracing: The Rest of Your Life.
+    if (r != r) r = 0.0;
+    if (g != g) g = 0.0;
+    if (b != b) b = 0.0;
 
-void setup_scene(Scene& scene) {
-    RObjectList world;
+    // Divide the color by the number of samples and gamma-correct for gamma=2.0.
+    auto scale = 1.0 / samples_per_pixel;
+    r = sqrt(scale * r);
+    g = sqrt(scale * g);
+    b = sqrt(scale * b);
 
-    auto material_ground = std::make_shared<Lambertian>(color(0.8, 0.8, 0.0));
-    auto material_center = std::make_shared<Dielectric>(1.5);
-    auto material_left = std::make_shared<Dielectric>(1.5);
-    auto material_right = std::make_shared<Metal>(color(0.8, 0.6, 0.2), 1.0);
-
-
-    world.add(std::make_shared<Sphere>(point3(0.0, -100.5, -2.0), 100.0, material_ground));
-    world.add(std::make_shared<Sphere>(point3(0.0, 0.0, -2.0), 0.5, material_center));
-    world.add(std::make_shared<Sphere>(point3(-1.0, 0.0, -2.0), 0.5, material_left));
-    world.add(std::make_shared<Sphere>(point3(1.0, 0.0, -2.0), 0.5, material_right));
-
-    scene.add_objects(world);
+    // Write the translated [0,255] value of each color component.
+    out << static_cast<int>(256 * clamp(r, 0.0, 0.999)) << ' '
+        << static_cast<int>(256 * clamp(g, 0.0, 0.999)) << ' '
+        << static_cast<int>(256 * clamp(b, 0.0, 0.999)) << '\n';
 }
+
 
 int main() {
 
+    Scene scene;
 
-    Scene scene(512, 2.0f, 16.0 / 9.0, 1.0);
+    scene.set_random_scene();
+    std::vector<vec3> buffer = scene.render();
+    P3 p3(scene.get_width(), scene.get_height(), "../resources/img2.ppm");
 
-    setup_scene(scene);
-    auto buffer = scene.render();
-
-    P3 p3(scene.image_width(), scene.image_height(), "../resources/img_dielectric.ppm");
     p3.set_img_buffer(buffer);
     p3.write_image();
-
 
     return 0;
 }

@@ -13,15 +13,11 @@ P3::~P3() {
 }
 
 void P3::write_image() {
-    this->write_header();
+    write_header();
 
     for (int y = 0; y < m_img_height; y++) {
         for (int x = 0; x < m_img_width; x++) {
             vec3 vec = m_buffer[x + m_img_width * y];
-
-            if (vec[0] != vec[0]) {vec[0] = 0.0;}
-            if (vec[1] != vec[1]) {vec[1] = 0.0;}
-            if (vec[2] != vec[2]) {vec[2] = 0.0;}
 
             m_outfile << static_cast<int>(256 * clamp(vec[0], 0.0, 0.999)) << " "
                       << static_cast<int>(256 * clamp(vec[1], 0.0, 0.999)) << " "
