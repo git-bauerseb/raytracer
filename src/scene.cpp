@@ -1,17 +1,48 @@
 #include "scene.h"
 
-void Scene::set_random_scene() {
 
-    set_camera_settings();
+void Scene::set_structured_scene() {
+    set_camera_settings_structured();
+
+    // Blue: 83aedb
+    // Red: ae6e7f
 
     RObjectList world;
 
-    auto ground_material = std::make_shared<Lambertian>(color(0.5, 0.5, 0.5));
+    auto ground_material = std::make_shared<Lambertian>(color(0x66/255.0, 0x86/255.0, 0x6e/255.0));
+
+    auto red_material = std::make_shared<Metal>(color(0xae/255.0, 0x6e/255.0, 0x7f/255.0), 0.76);
+    auto blue_material = std::make_shared<Lambertian>(color(0x83/255.0, 0xae/255.0, 0xdb/255.0));
+    auto silver_material = std::make_shared<Metal>(color(211.0/255.0, 211.0/255.0, 211.0/255.0), 1.0);
+    auto dark_gray_material = std::make_shared<Metal>(color(98.0/255.0, 98.0/255.0, 98.0/255.0), 0.83);
+    auto white_material = std::make_shared<Lambertian>(color(242.0/255.0, 242.0/255.0, 242.0/255.0));
+
+    world.add(std::make_shared<Sphere>(vec3(0, -1000.5, 0), 1000, ground_material));
+
+    // Middle
+    world.add(std::make_shared<Sphere>(vec3(0, 0.3, 18.6), 1, blue_material));
+    world.add(std::make_shared<Sphere>(vec3(2, 0.3, 17.8), 1, dark_gray_material));
+    world.add(std::make_shared<Sphere>(vec3(4.0, 0.3, 17.0), 1, white_material));
+    world.add(std::make_shared<Sphere>(vec3(-2, 0.3, 17.8), 1, silver_material));
+    world.add(std::make_shared<Sphere>(vec3(-4.0, 0.3, 17.0), 1, red_material));
+
+
+    m_objects = world;
+
+}
+
+void Scene::set_random_scene() {
+
+    set_camera_settings_random();
+
+    RObjectList world;
+
+    auto ground_material = std::make_shared<Lambertian>(color(0x69/256.0, 0x85/256.0, 0x6e/256.0));
     world.add(std::make_shared<Sphere>(point3(0,-1000,0), 1000, ground_material));
 
 
-    for (int a = -11; a < 11; a++) {
-        for (int b = -11; b < 11; b++) {
+    for (int a = -7; a < 7; a++) {
+        for (int b = -7; b < 7; b++) {
             auto choose_mat = rand_number();
             point3 center(a + 0.9*rand_number(), 0.2, b + 0.9*rand_number());
 
@@ -38,79 +69,59 @@ void Scene::set_random_scene() {
         }
     }
 
-    auto material1 = std::make_shared<Dielectric>(1.5);
-    world.add(std::make_shared<Sphere>(point3(0, 1, 0), 1.0, material1));
+    auto red_material = std::make_shared<Metal>(color(0xae/255.0, 0x6e/255.0, 0x7f/255.0), 0.76);
+    auto blue_material = std::make_shared<Lambertian>(color(0x83/255.0, 0xae/255.0, 0xdb/255.0));
+    auto silver_material = std::make_shared<Metal>(color(211.0/255.0, 211.0/255.0, 211.0/255.0), 1.0);
 
-    auto material2 = std::make_shared<Lambertian>(color(0.4, 0.2, 0.1));
-    world.add(std::make_shared<Sphere>(point3(-4, 1, 0), 1.0, material2));
 
-    auto material3 = std::make_shared<Metal>(color(0.7, 0.6, 0.5), 0.0);
-    world.add(std::make_shared<Sphere>(point3(4, 1, 0), 1.0, material3));
+    world.add(std::make_shared<Sphere>(point3(2, 1, 0), 1.0, blue_material));
+    world.add(std::make_shared<Sphere>(point3(4, 1, 0), 1.0, silver_material));
+    world.add(std::make_shared<Sphere>(point3(6, 1, 0), 1.0, red_material));
 
     m_objects = world;
 }
 
 std::vector<vec3> Scene::render() {
     std::vector<vec3> buffer(m_img_height * m_img_width);
+    std::vector<std::thread> threads(std::thread::hardware_concurrency());
 
-    int idx = 0;
-    for (int j = m_img_height-1; j >= 0; --j) {
-        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
-        for (int i = 0; i < m_img_width; ++i, idx++) {
-            color pixel_color(0,0,0);
-            for (int s = 0; s < m_samples; ++s) {
-                auto u = (i + rand_number()) / (m_img_width-1);
-                auto v = (j + rand_number()) / (m_img_height-1);
-                Ray r = m_camera.get_ray(u, v);
-                pixel_color += ray_color(r, m_raytrace_depth);
-            }
+    RenderSchedule schedule(m_img_width, m_img_height, 32);
 
-            double r = pixel_color.x();
-            double g = pixel_color.y();
-            double b = pixel_color.z();
+    for (auto& t : threads) {
+        t = std::thread(RenderTask{schedule, buffer, m_objects,m_camera,
+                                   m_samples, m_raytrace_depth, m_img_width, m_img_height});
+    }
 
-            const double scale = 1.0 / m_samples;
-
-            r = std::sqrt(r * scale);
-            g = std::sqrt(g * scale);
-            b = std::sqrt(b * scale);
-            buffer[idx] = vec3(r,g,b);
-        }
+    for (auto& t : threads) {
+        t.join();
     }
 
     return buffer;
 }
 
+void Scene::set_camera_settings_structured() {
+    const auto aspect_ratio = 16.0 / 9.0;
+    m_img_width = 1280;
+    m_img_height = static_cast<int>(m_img_width / aspect_ratio);
+    m_samples = 128;
+    m_raytrace_depth = 32;
 
+    point3 lookfrom(0,1,0);
+    point3 lookat(0,0.92,1);
+    vec3 vup(0,1,0);
+    auto dist_to_focus = 17;
+    auto aperture = 0.0;
 
-// Private
-color Scene::ray_color(const Ray& r, int depth) {
-    HitInfo rec;
-
-    // If we've exceeded the ray bounce limit, no more light is gathered.
-    if (depth <= 0)
-        return color(0,0,0);
-
-    if (m_objects.hit(r, 0.001, std::numeric_limits<double>::infinity(), rec)) {
-        Ray scattered;
-        color attenuation;
-        if (rec.m_material->scatter(r, rec, attenuation, scattered))
-            return attenuation * ray_color(scattered, depth-1);
-        return color(0,0,0);
-    }
-
-    vec3 unit_direction = unit_vector(r.direction());
-    auto t = 0.5*(unit_direction.y() + 1.0);
-    return (1.0-t)*color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0);
+    m_camera = Camera(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 }
 
-void Scene::set_camera_settings() {
+void Scene::set_camera_settings_random() {
 
     const auto aspect_ratio = 16.0 / 9.0;
-    m_img_width = 256;
+    m_img_width = 512;
     m_img_height = static_cast<int>(m_img_width / aspect_ratio);
-    m_samples = 38;
-    m_raytrace_depth = 8;
+    m_samples = 64;
+    m_raytrace_depth = 16;
 
     point3 lookfrom(13,1.6,3);
     point3 lookat(0,1.4,0);

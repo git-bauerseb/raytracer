@@ -15,7 +15,7 @@ P3::~P3() {
 void P3::write_image() {
     write_header();
 
-    for (int y = 0; y < m_img_height; y++) {
+    for (int y = m_img_height - 1; y >= 0; y--) {
         for (int x = 0; x < m_img_width; x++) {
             vec3 vec = m_buffer[x + m_img_width * y];
 

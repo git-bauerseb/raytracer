@@ -10,3 +10,6 @@ add_executable(raytracer
         src/p3.cpp
         src/scene.cpp
         src/objects/sphere.cpp)
+
+
+target_link_libraries(raytracer pthread)
