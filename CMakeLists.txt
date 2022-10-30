@@ -4,12 +4,9 @@ project(raytracer)
 include_directories(include)
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS "-O3")
 
 add_executable(raytracer
-        src/main.cpp
-        src/p3.cpp
-        src/scene.cpp
-        src/objects/sphere.cpp)
+        src/main.cpp)
 
-
-target_link_libraries(raytracer pthread)
+target_link_libraries(raytracer pthread sfml-window sfml-graphics sfml-system)

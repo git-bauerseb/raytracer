@@ -1,31 +1,29 @@
 #ifndef RAYTRACER_RAY_H
 #define RAYTRACER_RAY_H
 
-#include "vec3.h"
+#include "math/vector3.h"
 
 class Ray {
-
     public:
-        Ray(const vec3& origin, const vec3& direction)
-            : m_origin(origin), m_direction(direction) {}
-
         Ray() {}
+        Ray(const point3& origin, const Vector3& direction)
+                : orig(origin), dir(direction) {}
 
-        vec3 direction() const {
-            return m_direction;
+        point3 origin() const {
+            return orig;
         }
 
-        vec3 origin() const {
-            return m_origin;
+        Vector3 direction() const {
+            return dir;
         }
 
-        vec3 at(double scalar) const {
-            return m_origin + scalar * m_direction;
+        point3 at(double t) const {
+            return orig + t * dir;
         }
 
     private:
-        vec3 m_origin;
-        vec3 m_direction;
+        point3 orig;
+        Vector3 dir;
 };
 
 #endif

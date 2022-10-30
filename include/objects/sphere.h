@@ -1,53 +1,57 @@
-#ifndef RAYTRACER_SPHERE_H
-#define RAYTRACER_SPHERE_H
+#ifndef RAYTRACER_OBJECTS_SPHERE_H
+#define RAYTRACER_OBJECTS_SPHERE_H
 
-#include <utility>
-#include <vector>
-#include "r_object.h"
+#include "render_object.h"
 
-class Sphere : public RObject {
-    public:
-
-        Sphere(vec3 center, double radius, std::shared_ptr<Material> material)
-            : m_center(center), m_radius(radius), m_material(std::move(material)) {}
+class Sphere : public RenderObject {
+public:
+    Sphere() {}
+    Sphere(point3 cen, double r, std::shared_ptr<Material> m)
+            : center(cen), radius(r), mat_ptr(m) {}
 
     virtual bool hit(
             const Ray& r,
             double t_min,
             double t_max,
-            HitInfo& rec
-    ) const override {
-            vec3 oc = r.origin() - m_center;
-            auto a = r.direction().length_squared();
-            auto half_b = dot(oc, r.direction());
-            auto c = oc.length_squared() - m_radius * m_radius;
+            HitRecord& rec
+    ) const override;
 
-            auto discriminant = half_b*half_b - a*c;
-            if (discriminant < 0) return false;
-            auto sqrtd = sqrt(discriminant);
-
-            // Find the nearest root that lies in the acceptable range.
-            auto root = (-half_b - sqrtd) / a;
-            if (root < t_min || t_max < root) {
-                root = (-half_b + sqrtd) / a;
-                if (root < t_min || t_max < root)
-                    return false;
-            }
-
-            rec.m_t = root;
-            rec.m_position = r.at(rec.m_t);
-            vec3 normal = (rec.m_position - m_center) / m_radius;
-            rec.set_face_normal(r, normal);
-            rec.m_material = m_material;
-
-            return true;
-        }
-
-    private:
-        vec3 m_center;
-        double m_radius;
-        std::shared_ptr<Material> m_material;
-
+private:
+    point3 center;
+    double radius;
+    std::shared_ptr<Material> mat_ptr;
 };
+
+bool Sphere::hit(const Ray& r,
+                 double t_min,
+                 double t_max,
+                 HitRecord& rec) const {
+
+    Vector3 oc = r.origin() - center;
+    auto a = r.direction().length_squared();
+    auto half_b = dot(oc, r.direction());
+    auto c = oc.length_squared() - radius*radius;
+
+    auto discriminant = half_b*half_b - a*c;
+    if (discriminant < 0) return false;
+    auto sqrtd = sqrt(discriminant);
+
+    // Find the nearest root that lies in the acceptable range.
+    auto root = (-half_b - sqrtd) / a;
+    if (root < t_min || t_max < root) {
+        root = (-half_b + sqrtd) / a;
+        if (root < t_min || t_max < root)
+            return false;
+    }
+
+    rec.t = root;
+    rec.p = r.at(rec.t);
+    Vector3 normal = (rec.p - center) / radius;
+    rec.set_face_normal(r, normal);
+    rec.mat_ptr = mat_ptr;
+
+    return true;
+
+}
 
 #endif
