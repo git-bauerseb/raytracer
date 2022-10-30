@@ -1,31 +1,26 @@
 #ifndef RAYTRACER_MATERIAL_H
 #define RAYTRACER_MATERIAL_H
 
-#ifndef MATERIAL_H
-#define MATERIAL_H
-
 #include "ray.h"
 #include "math/vector3.h"
 #include "raytracer.h"
 
 class Material {
     public:
-        virtual bool scatter(
-                const Ray& r_in, const HitRecord& rec, color& attenuation, Ray& scattered
-        ) const = 0;
+        virtual bool scatter(const Ray& r_in, const HitRecord& rec, Vector3& attenuation, Ray& scattered) const = 0;
 };
 
 class Lambertian : public Material {
     public:
-        Lambertian(const color& a) : albedo(a) {}
+        Lambertian(const Vector3& a) : albedo(a) {}
 
         virtual bool scatter(
-                const Ray& r_in, const HitRecord& rec, color& attenuation, Ray& scattered
+                const Ray& r_in, const HitRecord& rec, Vector3& attenuation, Ray& scattered
         ) const override {
 
             auto scatter_dir = rec.normal + random_unit_vector();
 
-            if (scatter_dir.near_zero()) {
+            if (scatter_dir.is_zero()) {
                 scatter_dir = rec.normal;
             }
 
@@ -36,15 +31,15 @@ class Lambertian : public Material {
         }
 
     private:
-        color albedo;
+        Vector3 albedo;
 };
 
 class Metal : public Material {
     public:
-        Metal(const color& a, double f) : albedo(a), fuzz(f < 1 ? f : 1) {}
+        Metal(const Vector3& a, double f) : albedo(a), fuzz(f < 1 ? f : 1) {}
 
         virtual bool scatter(
-                const Ray& r_in, const HitRecord& rec, color& attenuation, Ray& scattered
+                const Ray& r_in, const HitRecord& rec, Vector3& attenuation, Ray& scattered
         ) const override {
             Vector3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
             scattered = Ray(rec.p, reflected + fuzz * random_in_unit_sphere());
@@ -53,7 +48,7 @@ class Metal : public Material {
         }
 
     private:
-        color albedo;
+        Vector3 albedo;
         double fuzz;
 };
 
@@ -62,11 +57,11 @@ class Dielectric : public Material {
 
         Dielectric(double index_of_refraction) : ir(index_of_refraction), m_albedo{1,1,1} {}
 
-        Dielectric(double index_of_refraction, color albedo)
+        Dielectric(double index_of_refraction, Vector3 albedo)
                 : ir(index_of_refraction), m_albedo(albedo) {}
 
         virtual bool scatter(
-                const Ray& r_in, const HitRecord& rec, color& attenuation, Ray& scattered
+                const Ray& r_in, const HitRecord& rec, Vector3& attenuation, Ray& scattered
         ) const override {
             attenuation = m_albedo;
             double refraction_ratio = rec.front_face ? (1.0/ir) : ir;
@@ -91,7 +86,7 @@ class Dielectric : public Material {
 
     private:
         double ir; // Index of Refraction
-        color m_albedo;
+        Vector3 m_albedo;
 
 
         static double reflectance(double cosine, double ref_idx) {
@@ -100,7 +95,5 @@ class Dielectric : public Material {
             return r0 + (1 - r0) * pow((1 - cosine), 5);
         }
 };
-
-#endif
 
 #endif

@@ -11,7 +11,7 @@
 class Material;
 
 struct HitRecord {
-    point3 p;
+    Vector3 p;
     Vector3 normal;
     double t;
     bool front_face;

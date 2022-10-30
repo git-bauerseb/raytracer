@@ -5,12 +5,12 @@
 
 #define PI 3.14159265359
 
-// Return a random number in the interval [0,1)
+// Return a random_vector number in the interval [0,1)
 double rand_number() {
     return std::rand() / (RAND_MAX + 1.0);
 }
 
-// Return a random number in the interval [min,max)
+// Return a random_vector number in the interval [min,max)
 double random_double(double min, double max) {
     return min + (max - min) * rand_number();
 }

@@ -6,71 +6,63 @@
 
 #include "utility.h"
 
-using std::sqrt;
-using std::fabs;
+#define EPSILON 10e-8       // A small value that for practical considerations
+                            // can be assumed to be "0"
 
+// Vector class representing a quantity in 3D space. Depending on context, can
+// either be used for color (RGB), points or directions.
 class Vector3 {
-public:
-    Vector3() : e{0, 0, 0} {}
-    Vector3(double e0, double e1, double e2) : e{e0, e1, e2} {}
+    public:
+        Vector3() : e{0, 0, 0} {}
+        Vector3(double e0, double e1, double e2) : e{e0, e1, e2} {}
 
-    double x() const { return e[0]; }
-    double y() const { return e[1]; }
-    double z() const { return e[2]; }
+        double x() const { return e[0]; }
+        double y() const { return e[1]; }
+        double z() const { return e[2]; }
 
-    Vector3 operator-() const { return Vector3(-e[0], -e[1], -e[2]); }
-    double operator[](int i) const { return e[i]; }
-    double& operator[](int i) { return e[i]; }
+        Vector3 operator-() const { return Vector3(-e[0], -e[1], -e[2]); }
+        double operator[](int i) const { return e[i]; }
+        double& operator[](int i) { return e[i]; }
 
-    Vector3& operator+=(const Vector3 &v) {
-        e[0] += v.e[0];
-        e[1] += v.e[1];
-        e[2] += v.e[2];
-        return *this;
-    }
+        Vector3& operator+=(const Vector3 &v) {
+            e[0] += v.e[0];
+            e[1] += v.e[1];
+            e[2] += v.e[2];
+            return *this;
+        }
 
-    Vector3& operator*=(const double t) {
-        e[0] *= t;
-        e[1] *= t;
-        e[2] *= t;
-        return *this;
-    }
+        Vector3& operator*=(const double t) {
+            e[0] *= t;
+            e[1] *= t;
+            e[2] *= t;
+            return *this;
+        }
 
-    Vector3& operator/=(const double t) {
-        return *this *= 1/t;
-    }
+        Vector3& operator/=(const double t) {
+            return *this *= 1/t;
+        }
 
-    double length() const {
-        return sqrt(length_squared());
-    }
+        double length() const {
+            return sqrt(length_squared());
+        }
 
-    double length_squared() const {
-        return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
-    }
+        double length_squared() const {
+            return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
+        }
 
-    bool near_zero() const {
-        // Return true if the vector is close to zero in all dimensions.
-        const auto s = 1e-8;
-        return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
-    }
+        bool is_zero() const {
+            return std::fabs(e[0]) < EPSILON
+                && std::fabs(e[1]) < EPSILON
+                && std::fabs(e[2]) < EPSILON;
+        }
 
-    inline static Vector3 random() {
-        return Vector3(rand_number(), rand_number(), rand_number());
-    }
+        static Vector3 random_vector(double min, double max) {
+            return Vector3(random_double(min, max), random_double(min, max), random_double(min, max));
+        }
 
-    inline static Vector3 random(double min, double max) {
-        return Vector3(random_double(min, max), random_double(min, max), random_double(min, max));
-    }
-
-public:
-    double e[3];
+    public:
+        double e[3];
 };
-
-
-// Type aliases for Vector3
-using point3 = Vector3;   // 3D point
-using color = Vector3;    // RGB color
-
 
 // Vector3 Utility Functions
 
@@ -128,7 +120,7 @@ inline Vector3 random_in_unit_disk() {
 
 inline Vector3 random_in_unit_sphere() {
     while (true) {
-        auto p = Vector3::random(-1, 1);
+        auto p = Vector3::random_vector(-1, 1);
         if (p.length_squared() >= 1) continue;
         return p;
     }
@@ -136,14 +128,6 @@ inline Vector3 random_in_unit_sphere() {
 
 inline Vector3 random_unit_vector() {
     return unit_vector(random_in_unit_sphere());
-}
-
-inline Vector3 random_in_hemisphere(const Vector3& normal) {
-    Vector3 in_unit_sphere = random_in_unit_sphere();
-    if (dot(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
-        return in_unit_sphere;
-    else
-        return -in_unit_sphere;
 }
 
 inline Vector3 reflect(const Vector3& v, const Vector3& n) {

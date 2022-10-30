@@ -6,7 +6,7 @@
 class Sphere : public RenderObject {
 public:
     Sphere() {}
-    Sphere(point3 cen, double r, std::shared_ptr<Material> m)
+    Sphere(Vector3 cen, double r, std::shared_ptr<Material> m)
             : center(cen), radius(r), mat_ptr(m) {}
 
     virtual bool hit(
@@ -17,7 +17,7 @@ public:
     ) const override;
 
 private:
-    point3 center;
+    Vector3 center;
     double radius;
     std::shared_ptr<Material> mat_ptr;
 };
